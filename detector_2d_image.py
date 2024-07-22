@@ -3,8 +3,7 @@ Como usar:
     python -m venv myenv
     source myenv/bin/activate
     pip install opencv-python apriltag
-    cd ws_apriltag/apriltag
-    python detector_2d.py
+    python detector_2d_image.py
 '''
 
 # referência do plot: https://blog.fixermark.com/posts/2022/april-tags-python-recognizer/

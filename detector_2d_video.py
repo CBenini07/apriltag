@@ -1,3 +1,10 @@
+''''
+Como usar:
+    python -m venv myenv
+    source myenv/bin/activate
+    pip install opencv-python apriltag
+    python detector_2d_video.py
+'''
 import cv2
 import apriltag
 
@@ -36,13 +43,12 @@ if not cap.isOpened():
     exit(1)
 
 # Inicializar o detector de AprilTags
+detector = apriltag("tag36h11")
 detector = apriltag.Detector()
 
 while True:
-    # Capturar o quadro atual da câmera
-    ret, frame = cap.read()
+    ret, frame = cap.read() # Capturar o quadro atual da câmera
 
-    # Verificar se o quadro foi capturado com sucesso
     if not ret:
         print("Erro ao capturar o quadro")
         break
@@ -54,6 +60,18 @@ while True:
     detections = detector.detect(gray_frame)
 
     print(f"Número de tags detectadas: {len(detections)}")
+    # Exibir as coordenadas das tags detectadas
+    if len(detections) >= 1:
+        for i, detection in enumerate(detections):
+            # Acessar e imprimir atributos específicos da detecção
+            detection_id = detection.tag_id
+            detection_center = detection.center
+            detection_corners = detection.corners
+            print(f"Detecção {i}: ID da Tag = {detection_id}, Centro = {detection_center}")
+
+    # Imprimir as coordenadas dos cantos
+    for j, corner in enumerate(detection_corners):
+        print(f"Canto {j}: {corner}")
 
     # Desenhar as detecções na imagem
     for detection in detections:
