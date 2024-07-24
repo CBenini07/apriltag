@@ -5,10 +5,10 @@ import numpy as np
 import glob
 
 # Defina o tamanho do tabuleiro de xadrez
-chessboard_size = (9, 6)  # número de quadrados internos (cantos)
-square_size = 0.025  # tamanho de cada quadrado do tabuleiro de xadrez em metros
+chessboard_size = (7, 5)  # número de quadrados internos (cantos)
+square_size = 0.027  # tamanho de cada quadrado do tabuleiro de xadrez em metros
 
-# Prepare os pontos do objeto, como (0,0,0), (1,0,0), (2,0,0) ....,(8,5,0)
+# Prepare os pontos do objeto, como (0,0,0), (1,0,0), (2,0,0) ....,(6,4,0)
 objp = np.zeros((chessboard_size[0] * chessboard_size[1], 3), np.float32)
 objp[:, :2] = np.mgrid[0:chessboard_size[0], 0:chessboard_size[1]].T.reshape(-1, 2)
 objp *= square_size
@@ -18,7 +18,7 @@ objpoints = []  # pontos 3D no espaço do mundo real
 imgpoints = []  # pontos 2D no plano da imagem
 
 # Carregar todas as imagens do tabuleiro de xadrez
-images = glob.glob('calibration_images/*.jpg')
+images = glob.glob('./calibration_images/*.png')
 
 for fname in images:
     img = cv2.imread(fname)
@@ -39,14 +39,17 @@ for fname in images:
 
 cv2.destroyAllWindows()
 
-# Calibrar a câmera
-ret, K, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, gray.shape[::-1], None, None)
+# Calibrar a câmera somente se pelo menos uma imagem foi encontrada
+if objpoints and imgpoints:
+    ret, K, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, gray.shape[::-1], None, None)
 
-# Salvar os parâmetros da calibração
-np.savez('camera_calibration_params.npz', K=K, dist=dist)
+    # Salvar os parâmetros da calibração
+    np.savez('camera_calibration_params.npz', K=K, dist=dist)
 
-# Imprimir os parâmetros da câmera
-print("Matriz Intrínseca (K):")
-print(K)
-print("\nCoeficientes de Distorção (dist):")
-print(dist)
+    # Imprimir os parâmetros da câmera
+    print("\n\nMatriz Intrínseca (K):")
+    print(K)
+    print("\nCoeficientes de Distorção (dist):")
+    print(dist)
+else:
+    print("Nenhuma imagem de tabuleiro de xadrez foi encontrada.")

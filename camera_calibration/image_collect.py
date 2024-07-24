@@ -3,7 +3,7 @@ import os
 import time
 
 # Nome da pasta onde as imagens serão salvas
-output_folder = 'camera_calibration/calibration_images'
+output_folder = './calibration_images'
 
 # Cria a pasta se ela Nao existir
 if not os.path.exists(output_folder):
@@ -13,7 +13,7 @@ id_camera = 0
 # Tentar abrir a camera com o backend DirectShow
 cap = cv2.VideoCapture(id_camera, cv2.CAP_DSHOW)
 if not cap.isOpened():
-    print("Erro: Nao foi possivel abrir a camera com o backend padrao. Tentando com DirectShow...")
+    print("Erro: Nao foi possivel abrir a camera com o backend DirectShow, tentando o padrão...")
     cap = cv2.VideoCapture(id_camera)
     if not cap.isOpened():
         print("Erro: Nao foi possivel abrir a camera.")
