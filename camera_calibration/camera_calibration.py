@@ -5,7 +5,7 @@ import numpy as np
 import glob
 
 # Defina o tamanho do tabuleiro de xadrez
-chessboard_size = (7, 5)  # número de quadrados internos (cantos)
+chessboard_size = (8, 6)  # número de quadrados internos (cantos)
 square_size = 0.027  # tamanho de cada quadrado do tabuleiro de xadrez em metros
 
 # Prepare os pontos do objeto, como (0,0,0), (1,0,0), (2,0,0) ....,(6,4,0)

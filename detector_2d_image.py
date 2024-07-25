@@ -36,7 +36,7 @@ import cv2
 import apriltag
 
 # Caminho para a imagem contendo a AprilTag
-image_path = '../tags/images.png'  # Certifique-se de que este caminho está correto
+image_path = 'tags/test_image.png' 
 
 # Carregar a imagem em escala de cinza
 image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)

@@ -1,12 +1,10 @@
-''''
-Como usar:
-    python -m venv myenv
-    source myenv/bin/activate
-    pip install opencv-python apriltag
-    python detector_2d_video.py
-'''
 import cv2
+import numpy as np
 import apriltag
+
+# Carregar os parâmetros de calibração da câmera
+with np.load('camera_calibration/camera_calibration_params.npz') as X:
+    K, dist = [X[i] for i in ('K', 'dist')]
 
 # Definir cores para a plotagem
 LINE_LENGTH = 5
@@ -34,17 +32,49 @@ def plotText(image, center, color, text):
     return cv2.putText(image, str(text), center, cv2.FONT_HERSHEY_SIMPLEX,
                        1, color, 3)
 
-# Inicializar a câmera USB (substitua 0 pelo índice da sua câmera se necessário)
-cap = cv2.VideoCapture(1)
-
-# Verificar se a câmera foi aberta com sucesso
+id_camera = 0
+# Tentar abrir a camera com o backend DirectShow
+cap = cv2.VideoCapture(id_camera, cv2.CAP_DSHOW)
 if not cap.isOpened():
-    print("Erro ao abrir a câmera")
-    exit(1)
+    print("Erro: Nao foi possivel abrir a camera com o backend DirectShow, tentando o padrão...")
+    cap = cv2.VideoCapture(id_camera)
+    if not cap.isOpened():
+        print("Erro: Nao foi possivel abrir a camera.")
+        exit()
 
 # Inicializar o detector de AprilTags
-detector = apriltag("tag36h11")
-detector = apriltag.Detector()
+options = apriltag.DetectorOptions(families='tag36h11',
+                                 border=1,
+                                 nthreads=4,
+                                 quad_decimate=1.0,
+                                 quad_blur=0.0,
+                                 refine_edges=True,
+                                 refine_decode=False,
+                                 refine_pose=False,
+                                 debug=False,
+                                 quad_contours=True)
+detector = apriltag.Detector(options)
+
+# Def. o tamanho da tag (em metros)
+tag_size = 0.165  
+
+# Função para converter coordenadas de pixels para metros usando solvePnP
+def convert_to_real_world_coords(corners, tag_size, K, dist):
+    # Define os pontos 3D da tag no mundo real
+    object_points = np.array([
+        [-tag_size/2, tag_size/2, 0],
+        [tag_size/2, tag_size/2, 0],
+        [tag_size/2, -tag_size/2, 0],
+        [-tag_size/2, -tag_size/2, 0]
+    ], dtype=np.float32)
+
+    # Estima a pose da tag em relação à câmera
+    success, rvec, tvec = cv2.solvePnP(object_points, corners, K, dist)
+
+    if success:
+        return tvec
+    else:
+        return None
 
 while True:
     ret, frame = cap.read() # Capturar o quadro atual da câmera
@@ -69,9 +99,14 @@ while True:
             detection_corners = detection.corners
             print(f"Detecção {i}: ID da Tag = {detection_id}, Centro = {detection_center}")
 
-    # Imprimir as coordenadas dos cantos
-    for j, corner in enumerate(detection_corners):
-        print(f"Canto {j}: {corner}")
+            # Converter coordenadas para o mundo real
+            real_center = convert_to_real_world_coords(detection_corners, tag_size, K, dist)
+            if real_center is not None:
+                print(f"Coordenadas do Centro (metros): {real_center.flatten()}")
+
+            # Imprimir as coordenadas dos cantos
+            for j, corner in enumerate(detection_corners):
+                print(f"Canto {j}: {corner}")
 
     # Desenhar as detecções na imagem
     for detection in detections:
