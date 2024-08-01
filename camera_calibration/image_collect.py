@@ -30,17 +30,18 @@ while True:
     if not ret:
         print("Erro: Nao foi possivel capturar o quadro.")
         break
-
+    
     ret, corners = cv2.findChessboardCorners(frame, chessboard_size, None)
-    frame_detected = cv2.drawChessboardCorners(frame, chessboard_size, corners, ret)
-    cv2.imshow('frame', frame_detected)
-    # Salva a imagem na pasta especificada
-    cv2.imwrite(os.path.join(output_folder, f'frame_{frame_count}.png'), frame)
-    frame_count += 1
+    if ret: 
+        # Salva a imagem na pasta especificada
+        cv2.imwrite(os.path.join(output_folder, f'frame_{frame_count}.png'), frame)
+        frame = cv2.drawChessboardCorners(frame, chessboard_size, corners, ret)
+        frame_count += 1
+    cv2.imshow('frame', frame)
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
-    time.sleep(0.2) # def o framerate 
+    time.sleep(0.25) # def o framerate 
     
 cap.release()
 cv2.destroyAllWindows()

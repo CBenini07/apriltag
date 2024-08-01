@@ -1,6 +1,10 @@
 import cv2
 import numpy as np
 import apriltag
+import time
+
+# Def. o tamanho da tag (em metros)
+tag_size = 0.095  
 
 # Carregar os parâmetros de calibração da câmera
 with np.load('camera_calibration/camera_calibration_params.npz') as X:
@@ -55,8 +59,6 @@ options = apriltag.DetectorOptions(families='tag36h11',
                                  quad_contours=True)
 detector = apriltag.Detector(options)
 
-# Def. o tamanho da tag (em metros)
-tag_size = 0.165  
 
 # Função para converter coordenadas de pixels para metros usando solvePnP
 def convert_to_real_world_coords(corners, tag_size, K, dist):
@@ -70,6 +72,7 @@ def convert_to_real_world_coords(corners, tag_size, K, dist):
 
     # Estima a pose da tag em relação à câmera
     success, rvec, tvec = cv2.solvePnP(object_points, corners, K, dist)
+    print(f"tvec:{tvec}")
 
     if success:
         return tvec
@@ -107,13 +110,13 @@ while True:
             # Imprimir as coordenadas dos cantos
             for j, corner in enumerate(detection_corners):
                 print(f"Canto {j}: {corner}")
+        time.sleep(0.2) # delay para aliviar detecção
+        print('\n')
 
     # Desenhar as detecções na imagem
     for detection in detections:
-        # Desenhar o centro da tag
-        frame = plotPoint(frame, detection.center, CENTER_COLOR)
-        # Adicionar texto com o ID da tag
-        frame = plotText(frame, detection.center, CENTER_COLOR, detection.tag_id)
+        frame = plotPoint(frame, detection.center, CENTER_COLOR) # Desenhar o centro da tag
+        frame = plotText(frame, detection.center, CENTER_COLOR, detection.tag_id) # Adicionar texto com o ID da tag
         # Desenhar os cantos da tag
         for corner in detection.corners:
             frame = plotPoint(frame, corner, CORNER_COLOR)
